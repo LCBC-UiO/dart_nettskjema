@@ -62,7 +62,7 @@ Future<Map<String, int>> nettskjemaPublicGetFieldNames(int nettskjemaId) async {
   // obtain json from nettskjema server
   final r = await http.get("https://nettskjema.no/answer/answer.json?formId=$nettskjemaId");
   if (r.statusCode != _kHttpStatusSuccessOk) {
-    throw ServerResponseException(" HTTP status code '${r.statusCode}'");
+    throw ServerResponseException("HTTP status code '${r.statusCode}'");
   }
   final dynamic json = jsonDecode(r.body);
   final jsonStatus = _getJsonFieldSafe(json, _enumToString(_JsonFieldNames.status));
@@ -128,7 +128,7 @@ Future<void> nettskjemaPublicUpload({
   });
   var response = await request.send();
   if (response.statusCode != _kHttpStatusSuccessOk) {
-    throw "response.statusCode";
+    throw ServerResponseException("HTTP status code '${response.statusCode}'");
   }
   var json = jsonDecode(await response.stream.bytesToString());
   final jsonStatus = _getJsonFieldSafe(json, _enumToString(_JsonFieldNames.status));
