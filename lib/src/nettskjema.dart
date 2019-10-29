@@ -1,18 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'exceptions.dart';
-
-/*----------------------------------------------------------------------------*/
-
-const String _kNettskjemaResponseSuccess = "success";
-const int _kHttpStatusSuccessOk = 200;
-
-/*----------------------------------------------------------------------------*/
-
-String _enumToString(final o) => o.toString().split('.').last;
 
 /*----------------------------------------------------------------------------*/
 
@@ -26,7 +18,6 @@ enum _JsonFieldNames {
   message,
   status,
 }
-
 
 /*----------------------------------------------------------------------------*/
 
@@ -61,7 +52,7 @@ class NettskjemaPublic {
 Future<Map<String, int>> nettskjemaPublicGetFieldNames(int nettskjemaId) async {
   // obtain json from nettskjema server
   final r = await http.get("https://nettskjema.no/answer/answer.json?formId=$nettskjemaId");
-  if (r.statusCode != _kHttpStatusSuccessOk) {
+  if (r.statusCode != HttpStatus.ok) {
     throw ServerResponseException(" HTTP status code '${r.statusCode}'");
   }
   final dynamic json = jsonDecode(r.body);
@@ -127,7 +118,7 @@ Future<void> nettskjemaPublicUpload({
     request.fields['answersAsMap[$questionId].textAnswer'] = v;
   });
   var response = await request.send();
-  if (response.statusCode != _kHttpStatusSuccessOk) {
+  if (response.statusCode != HttpStatus.ok) {
     throw "response.statusCode";
   }
   var json = jsonDecode(await response.stream.bytesToString());
@@ -137,6 +128,14 @@ Future<void> nettskjemaPublicUpload({
     throw NettskjemaStatusException(message);
   }
 }
+
+/*----------------------------------------------------------------------------*/
+
+const String _kNettskjemaResponseSuccess = "success";
+
+/*----------------------------------------------------------------------------*/
+
+String _enumToString(final o) => o.toString().split('.').last;
 
 /*----------------------------------------------------------------------------*/
 
