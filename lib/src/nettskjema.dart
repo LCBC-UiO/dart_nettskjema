@@ -3,21 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-
 import 'exceptions.dart';
-
-/*----------------------------------------------------------------------------*/
-
-enum _JsonFieldNames {
-  form,
-  pages,
-  elements,
-  questions,
-  externalQuestionId,
-  questionId,
-  message,
-  status,
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -29,9 +15,9 @@ class NettskjemaPublic {
 
   Future<void> upload(Map<String, String> data) async {
     // resolve keys once
-    _externalToInternalQuestionId ??= await nettskjemaPublicGetFieldNames(nettskjemaId);
+    _externalToInternalQuestionId ??= await getSchemaFieldsPub(nettskjemaId);
     // upload
-    nettskjemaPublicUpload(
+    uploadSchemaPub(
       nettskjemaId: nettskjemaId,
       fieldNames: _externalToInternalQuestionId,
       data: data,
@@ -41,7 +27,6 @@ class NettskjemaPublic {
 
 /*----------------------------------------------------------------------------*/
 
-
 /// get all field names in nettskjema (with mapping to internal field ID)
 /// errors: 
 /// - Connection
@@ -49,7 +34,7 @@ class NettskjemaPublic {
 /// - FormatException (JSON)
 /// - MissingJsonField
 /// - NettskjemaStatus
-Future<Map<String, int>> nettskjemaPublicGetFieldNames(int nettskjemaId) async {
+Future<Map<String, int>> getSchemaFieldsPub(int nettskjemaId) async {
   // obtain json from nettskjema server
   final r = await http.get("https://nettskjema.no/answer/answer.json?formId=$nettskjemaId");
   if (r.statusCode != HttpStatus.ok) {
@@ -80,23 +65,6 @@ Future<Map<String, int>> nettskjemaPublicGetFieldNames(int nettskjemaId) async {
 }
 
 /*----------------------------------------------------------------------------*/
-  
-/// check if fields in a nettskjema match expected fields  - 1:1 and no additional fields
-/// - bool
-bool nettskjemaPublicMatchesExpectedFields({
-    @required List<String> nettskjemaFields, 
-    @required List<String> expectedFields
-  }) {
-  bool r;
-  try {
-    r = _matchesExpectedFields(nettskjemaFields, expectedFields);
-  } on FieldIdMatchException catch (_) {
-    r = false;
-  }
-  return r;
-}
-
-/*----------------------------------------------------------------------------*/
 
 /// upload to a nettskjema
 /// - FieldIdMatch
@@ -105,12 +73,15 @@ bool nettskjemaPublicMatchesExpectedFields({
 /// - FormatException (JSON)
 /// - MissingJsonField
 /// - NettskjemaStatus
-Future<void> nettskjemaPublicUpload({
-  @required int nettskjemaId,  
+Future<void> uploadSchemaPub({
+  @required int nettskjemaId,
   @required Map<String, int> fieldNames, 
   @required Map<String, String> data
   }) async {
-  assert(_matchesExpectedFields(fieldNames.keys.toList(), data.keys.toList())); //throws exeption if false
+  assert(matchesExpectedSchemaFieldsPub(
+    nettskjemaFields: fieldNames.keys.toList(), 
+    expectedFields: data.keys.toList())
+  ); //throws exeption if false
   var uri = Uri.parse("https://nettskjema.uio.no/answer/deliver.json?formId=$nettskjemaId&quizResultAsJson=true&elapsedTime=42");
   var request = http.MultipartRequest("POST", uri);
   data.forEach( (k,v) {
@@ -131,6 +102,38 @@ Future<void> nettskjemaPublicUpload({
 
 /*----------------------------------------------------------------------------*/
 
+/// check if fields in a nettskjema match expected fields  - 1:1 and no additional fields
+/// - FieldIdMatch
+bool matchesExpectedSchemaFieldsPub({
+    @required List<String> nettskjemaFields, 
+    @required List<String> expectedFields
+  }) {
+  final setn = nettskjemaFields.toSet();
+  final sete = expectedFields.toSet();
+  final r = setEquals(nettskjemaFields.toSet(), expectedFields.toSet());
+  if (!r) {
+    Set<String> missing = setn.difference(sete);
+    missing.addAll( sete.difference(setn));
+    throw FieldIdMatchException("mismatching form fields: ${missing.join(",")}");
+  }
+  return r;
+}
+
+/*----------------------------------------------------------------------------*/
+
+enum _JsonFieldNames {
+  form,
+  pages,
+  elements,
+  questions,
+  externalQuestionId,
+  questionId,
+  message,
+  status,
+}
+
+/*----------------------------------------------------------------------------*/
+
 const String _kNettskjemaResponseSuccess = "success";
 
 /*----------------------------------------------------------------------------*/
@@ -146,17 +149,3 @@ dynamic _getJsonFieldSafe(final dynamic json, String fieldName) {
   }
   return r;
 }
-
-/// - FieldIdMatch
-bool _matchesExpectedFields(List<String> nettskjemafields, List<String> expecetedFields) {
-  final setn = nettskjemafields.toSet();
-  final sete = expecetedFields.toSet();
-  final r = setEquals(nettskjemafields.toSet(), expecetedFields.toSet());
-  if (!r) {
-    Set<String> missing = setn.difference(sete);
-    missing.addAll( sete.difference(setn));
-    throw FieldIdMatchException("mismatching form fields: ${missing.join(",")}");
-  }
-  return r;
-}
-

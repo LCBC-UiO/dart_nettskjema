@@ -23,38 +23,38 @@ void main() {
   }; 
 
   test('nettskjemaPublicMatchesExpectedFields', () async {
-    expect(n.nettskjemaPublicMatchesExpectedFields(
+    expect(n.matchesExpectedSchemaFieldsPub(
       nettskjemaFields: ["1", "2", "3"],
-      expectedFields:   ["1", "2", "3"],
+      expectedFields: ["1", "2", "3"],
     ), true);
-    expect(n.nettskjemaPublicMatchesExpectedFields(
+    expect(n.matchesExpectedSchemaFieldsPub(
       nettskjemaFields: ["1", "2"     ],
       expectedFields:   ["1", "2", "3"],
     ), false);
-    expect(n.nettskjemaPublicMatchesExpectedFields(
+    expect(n.matchesExpectedSchemaFieldsPub(
       nettskjemaFields: ["1", "2", "3"],
       expectedFields:   [     "2", "3"],
     ), false);
   });
 
   test('nettskjemaPulicGetFieldNames online', () async {
-    final r = await n.nettskjemaPublicGetFieldNames(nettskjemaId);
+    final r = await n.getSchemaFieldsPub(nettskjemaId);
     expect(r, expectedFields);
-    expect(n.nettskjemaPublicMatchesExpectedFields(
+    expect(n.matchesExpectedSchemaFieldsPub(
       expectedFields: r.keys.toList(), 
       nettskjemaFields: expectedFields.keys.toList()
     ), true);
   });
 
   test('nettskjemaPublicUpload online', () async {
-    await n.nettskjemaPublicUpload(
+    await n.uploadSchemaPub(
       nettskjemaId: nettskjemaId,
       fieldNames: expectedFields,
       data: testdata,
     );
     expect(true, true);
     try {
-      await n.nettskjemaPublicUpload(
+      await n.uploadSchemaPub(
         nettskjemaId: nettskjemaId,
         fieldNames: expectedFields,
         data: {"sdf": "sdfsdf"},
@@ -81,6 +81,4 @@ void main() {
       expect(e, isInstanceOf<SocketException>());
     }
   });
-
-
 }
