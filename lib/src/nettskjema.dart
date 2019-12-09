@@ -17,7 +17,7 @@ class NettskjemaPublic {
     // resolve keys once
     _externalToInternalQuestionId ??= await getSchemaFieldsPub(nettskjemaId);
     // upload
-    uploadSchemaPub(
+    await uploadSchemaPub(
       nettskjemaId: nettskjemaId,
       fieldNames: _externalToInternalQuestionId,
       data: data,
@@ -82,7 +82,7 @@ Future<void> uploadSchemaPub({
     nettskjemaFields: fieldNames.keys.toList(), 
     expectedFields: data.keys.toList())
   ); //throws exeption if false
-  var uri = Uri.parse("https://nettskjema.uio.no/answer/deliver.json?formId=$nettskjemaId&quizResultAsJson=true&elapsedTime=42");
+  var uri = Uri.parse("https://nettskjema.no/answer/deliver.json?formId=$nettskjemaId&quizResultAsJson=true&elapsedTime=42");
   var request = http.MultipartRequest("POST", uri);
   data.forEach( (k,v) {
     final int questionId = fieldNames[k];
