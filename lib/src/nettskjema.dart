@@ -17,7 +17,7 @@ class NettskjemaPublic {
     // resolve keys once
     _externalToInternalQuestionId ??= await getSchemaFieldsPub(nettskjemaId);
     // upload
-    uploadSchemaPub(
+    await uploadSchemaPub(
       nettskjemaId: nettskjemaId,
       fieldNames: _externalToInternalQuestionId,
       data: data,
