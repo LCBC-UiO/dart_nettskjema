@@ -1,11 +1,6 @@
-import 'package:flutter/foundation.dart';
-
-/*----------------------------------------------------------------------------*/
-
 class _NettskjemaExceptionBase implements Exception {
   final String message;
 
-  @mustCallSuper
   _NettskjemaExceptionBase([this.message = ""]);
   
   String toString() {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'exceptions.dart';
 
@@ -11,7 +10,7 @@ class NettskjemaPublic {
   final int nettskjemaId;
   Map<String, int> _externalToInternalQuestionId;
 
-  NettskjemaPublic({@required this.nettskjemaId});
+  NettskjemaPublic({this.nettskjemaId});
 
   Future<void> upload(Map<String, String> data) async {
     // resolve keys once
@@ -74,9 +73,9 @@ Future<Map<String, int>> getSchemaFieldsPub(int nettskjemaId) async {
 /// - MissingJsonField
 /// - NettskjemaStatus
 Future<void> uploadSchemaPub({
-  @required int nettskjemaId,
-  @required Map<String, int> fieldNames, 
-  @required Map<String, String> data
+  int nettskjemaId,
+  Map<String, int> fieldNames, 
+  Map<String, String> data
   }) async {
   assert(matchesExpectedSchemaFieldsPub(
     nettskjemaFields: fieldNames.keys.toList(), 
@@ -105,12 +104,12 @@ Future<void> uploadSchemaPub({
 /// check if fields in a nettskjema match expected fields  - 1:1 and no additional fields
 /// - FieldIdMatch
 bool matchesExpectedSchemaFieldsPub({
-    @required List<String> nettskjemaFields, 
-    @required List<String> expectedFields
+    List<String> nettskjemaFields, 
+    List<String> expectedFields
   }) {
   final setn = nettskjemaFields.toSet();
   final sete = expectedFields.toSet();
-  final r = setEquals(nettskjemaFields.toSet(), expectedFields.toSet());
+  final r = SetEquality().equals(nettskjemaFields.toSet(), expectedFields.toSet());
   if (!r) {
     Set<String> missing = setn.difference(sete);
     missing.addAll( sete.difference(setn));
